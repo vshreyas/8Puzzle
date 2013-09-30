@@ -9,11 +9,11 @@ public class Node {
 	String operation;
 	Node parent;
 
-	public Vector<Integer> getBlankPosition() {
+	public Vector<Integer> getTilePosition(int n) {
 		Vector<Integer> v = new Vector<Integer>();
 		for(int i = 0;i < size;i++) {
 			for(int j = 0;j < size;j++) {
-				if(state.get(i).get(j) == 0) {
+				if(state.get(i).get(j) == n) {
 					v.add(i);
 					v.add(j);
 				}
@@ -24,7 +24,7 @@ public class Node {
 	}
 
 	public boolean applicable(String op) {
-		Vector<Integer> pos = getBlankPosition();
+		Vector<Integer> pos = getTilePosition(0);
 		Integer x = pos.get(0);
 		Integer y = pos.get(1);
 		if(op == "left") {
@@ -60,7 +60,7 @@ public class Node {
 				newstate.get(i).add(state.get(i).get(j));
 			}
 		}
-		Vector<Integer> pos = getBlankPosition();
+		Vector<Integer> pos = getTilePosition(0);
 		Integer x = pos.get(0);
 		Integer y = pos.get(1);
 		if(op == "left") {
