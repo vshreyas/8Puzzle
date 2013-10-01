@@ -4,24 +4,24 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.Scanner;
 import java.util.Vector;
 
 public class PuzzleSolver {
 	
 	Node goal;
-	
-	PuzzleSolver() {
-		Integer[] goal_vec = {1, 2, 3, 8, 0, 4, 7, 6, 5};
+	int nodes_visited;
+	PuzzleSolver(ArrayList<Integer> dest) {
 		goal = new Node();
 		goal.state = new Vector<Vector<Integer>>();
-		goal.size = 3;
+		goal.size = (int)Math.sqrt(dest.size());
 		for(int i = 0;i < goal.size;i++) {
 			goal.state.add(new Vector<Integer>());
 		}
 		for(int i = 0;i < goal.size;i++) {
 			for(int j = 0;j < goal.size;j++) {
 				
-				goal.state.get(i).add(goal_vec[i*goal.size + j]);;
+				goal.state.get(i).add(dest.get(i*goal.size + j));;
 			}
 		}
 	}
@@ -45,6 +45,7 @@ public class PuzzleSolver {
 	}
 	
 	private boolean goalCheck(Node soln) {
+		nodes_visited++;
 		if(soln.size != goal.size) return false;
 		for(int i = 0;i < soln.size; i++) {
 			for(int j =0 ;j<soln.size;j++) {
@@ -82,6 +83,7 @@ public class PuzzleSolver {
 	}
 	
 	private Node bfs(Node root) {
+		nodes_visited = 0;
 		ArrayDeque<Node> frontier = new ArrayDeque<Node>();
 		ArrayList<Node> explored = new ArrayList<Node>();
 		Node soln = null;
@@ -110,6 +112,30 @@ public class PuzzleSolver {
 		DNode(Node n, int d) {
 			node = n;
 			depth = d;
+		}
+	}
+	
+	private Node dfs(Node root) {
+		nodes_visited = 0;
+		ArrayDeque<Node> frontier = new ArrayDeque<Node>();
+		ArrayList<Node> explored = new ArrayList<Node>();
+		Node soln = null;
+		frontier.add(root);
+		while(true) {
+			Node n = frontier.poll();
+			if(n == null) return null;
+			//System.out.println("Visited node:");
+			//n.print();
+			if(goalCheck(n)){
+				return n;
+			}
+			for(String op : ops) {
+				if(n.applicable(op)) {
+					soln = n.applyOp(op);
+					if(!checkDup(explored,soln)) frontier.addFirst(soln);
+				}
+			}
+			explored.add(n);
 		}
 	}
 	
@@ -142,6 +168,7 @@ public class PuzzleSolver {
 	}
 	
 	private Node ids(Node root) {
+		nodes_visited = 0;
 		int limit = 1;
 		Node soln = null;
 		while(soln == null) {
@@ -153,6 +180,7 @@ public class PuzzleSolver {
 	}	
 	
 	private Node greedy(Node root, final String h) {
+		nodes_visited = 0;
 		Node soln = null;
 		PriorityQueue<Node> frontier = new PriorityQueue<Node>(10, new Comparator<Node>(){
 			@Override
@@ -295,29 +323,51 @@ public class PuzzleSolver {
 	}
 	
 	public static void main(String[] args) {
-		PuzzleSolver p = new PuzzleSolver();
+		
+		ArrayList<Integer> dest = new ArrayList<Integer>();
+		ArrayList<Integer> initial = new ArrayList<Integer>();
+		
+		Scanner console = new Scanner(System.in);
+		System.out.println("Enter the goal state:");
+		Scanner in = new Scanner(console.nextLine());
+		in.useDelimiter("[() ]");
+		while(in.hasNextInt()) {
+			dest.add(in.nextInt());
+		}
+		in.close();
+		
+		System.out.println("Enter a search method:");
+		in = new Scanner(console.nextLine());
+		in.useDelimiter("[() ]");
+		String algo = in.next();
+		while(in.hasNextInt()) {
+			initial.add(in.nextInt());
+		}
+		in.close();
+		
+		PuzzleSolver p = new PuzzleSolver(dest);
 		System.out.println("Goal:");
 		p.goal.print();
 		//1, 3, 4, 8, 6, 2, 7, 0, 5
 		//2, 8, 1, 0, 4, 3, 7, 6, 5
 		//5, 6, 7, 4, 0, 8, 3, 2, 1
-		int a[] = {5, 6, 7, 4, 0, 8, 3, 2, 1};
+		
 		Node n = new Node();
-		n.size = 3;
+		n.size = (int)Math.sqrt(initial.size());
 		n.state = new Vector<Vector<Integer>>();
 		for(int i = 0;i < n.size;i++) {
 			n.state.add(new Vector<Integer>());
 		}
 		for(int i = 0;i < n.size;i++) {
 			for(int j =0;j<n.size;j++) {
-				n.state.get(i).add(a[i*n.size + j]);
+				n.state.get(i).add(initial.get(i*n.size + j));
 			}
 		}
 		System.out.println("Start:");
 		n.print();
 		Node m;
 		ArrayDeque<String> moves = new ArrayDeque<String>();
-/*	
+	
 		m = p.bfs(n);
 		while(m.parent != null) {
 			moves.addFirst(m.operation);
@@ -364,14 +414,14 @@ public class PuzzleSolver {
 			m = m.parent;
 		}
 		System.out.println("astar2:"+moves.toString());
-*/
+
 		moves.clear();
-		m = p.ida(n, "h2");
+		m = p.ida(n, "h1");
 		while(m.parent != null) {
 			moves.addFirst(m.operation);
 			m = m.parent;
 		}
-		System.out.println("astar2:"+moves.toString());
+		System.out.println("astar2"+moves.toString() + "\nVisited "+ p.nodes_visited + "nodes");
 	}
 
 }
